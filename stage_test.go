@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func NewTestScenarioFn() Scenario {
+func NewTestScenarioFn(seed int64) Scenario {
 	return &TestScenario{}
 }
 
@@ -30,7 +30,7 @@ func (s *TestScenario) Line() Line {
 	return Line{"counter": s.counter}
 }
 
-func NewTestActorFn() Actor {
+func NewTestActorFn(seed int64) Actor {
 	return TestActor{}
 }
 
@@ -48,7 +48,7 @@ type TestAction struct {
 func (a TestAction) String() string { return fmt.Sprintf("%d", a.action) }
 
 func TestStageRunOnce(t *testing.T) {
-	stage := New("")
+	stage := New("", 20)
 	actor := TestActor{}
 	scenario := &TestScenario{}
 	out := new(bytes.Buffer)
@@ -67,19 +67,19 @@ func TestStageRunWitLogFileOnce(t *testing.T) {
 	dir, _ := ioutil.TempDir("", "test")
 	defer os.RemoveAll(dir)
 
-	stage := New(dir)
+	stage := New(dir, 20)
 	startAt, _ := time.Parse("2006/01/02 15:04:05", "2020/05/27 15:14:13")
 	stage.startAt = startAt
 	stage.ensureOutDir()
 
 	actor := TestActor{}
 	scenario := &TestScenario{}
-	err := stage.runWithLogFile(actor, scenario, 1000, 10)
+	err := stage.runWithLogFile(actor, scenario, 1000, 10, 30, 40)
 	if err != nil {
 		t.Errorf("stage.runWithLogFile shoud not happen the error %v", err)
 	}
 
-	log := filepath.Join(dir, "20200527151413", "iter-0010.log")
+	log := filepath.Join(dir, "20200527151413-20", "iter_0010-a_30-s_40.log")
 	expected := "12345678910"
 
 	b, err := ioutil.ReadFile(log)
@@ -96,7 +96,7 @@ func TestStageRun(t *testing.T) {
 	dir, _ := ioutil.TempDir("", "test")
 	defer os.RemoveAll(dir)
 
-	stage := New(dir)
+	stage := New(dir, 20)
 	err := stage.Run(10, NewTestActorFn, NewTestScenarioFn, 2)
 	if err != nil {
 		t.Errorf("stage.Run shoud not happen the error %v", err)

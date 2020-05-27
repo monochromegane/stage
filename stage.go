@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,12 +15,14 @@ import (
 )
 
 type Stage struct {
+	seed    int64
 	baseDir string
 	startAt time.Time
 }
 
-func New(outDir string) *Stage {
+func New(outDir string, seed int64) *Stage {
 	return &Stage{
+		seed:    seed,
 		baseDir: outDir,
 	}
 }
@@ -36,9 +39,12 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn
 	sem := make(chan struct{}, concurrency)
 	defer close(sem)
 
+	rnd := rand.New(rand.NewSource(s.seed))
 	eg, ctx := errgroup.WithContext(context.Background())
 	for i := 0; i < iter; i++ {
 		sem <- struct{}{}
+		aSeed := rnd.Int63()
+		sSeed := rnd.Int63()
 		i := i
 		eg.Go(func() error {
 			defer func() { <-sem }()
@@ -47,9 +53,9 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn
 			case <-ctx.Done():
 				return nil
 			default:
-				actor := newActorFn()
-				scenario := newScenarioFn()
-				err := s.runWithLogFile(actor, scenario, iter, i)
+				actor := newActorFn(aSeed)
+				scenario := newScenarioFn(sSeed)
+				err := s.runWithLogFile(actor, scenario, iter, i, aSeed, sSeed)
 				if err != nil {
 					return err
 				}
@@ -60,8 +66,8 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn
 	return eg.Wait()
 }
 
-func (s *Stage) runWithLogFile(actor Actor, scenario Scenario, iter, i int) error {
-	w, err := s.createLogFile(iter, i)
+func (s *Stage) runWithLogFile(actor Actor, scenario Scenario, iter, i int, aSeed, sSeed int64) error {
+	w, err := s.createLogFile(iter, i, aSeed, sSeed)
 	if err != nil {
 		return err
 	}
@@ -92,15 +98,15 @@ func (s *Stage) run(actor Actor, scenario Scenario, w io.Writer) error {
 }
 
 func (s *Stage) outDirName() string {
-	return filepath.Join(s.baseDir, s.startAt.Format("20060102150405"))
+	return filepath.Join(s.baseDir, fmt.Sprintf("%s-%d", s.startAt.Format("20060102150405"), s.seed))
 }
 
 func (s *Stage) ensureOutDir() error {
 	return ensureDir(s.outDirName())
 }
 
-func (s *Stage) createLogFile(max, i int) (*os.File, error) {
-	format := fmt.Sprintf("iter-%%0%dd.log", numberOfDigit(max))
-	name := fmt.Sprintf(format, i)
+func (s *Stage) createLogFile(max, i int, aSeed, sSeed int64) (*os.File, error) {
+	format := fmt.Sprintf("iter_%%0%dd-a_%%d-s_%%d.log", numberOfDigit(max))
+	name := fmt.Sprintf(format, i, aSeed, sSeed)
 	return os.Create(filepath.Join(s.outDirName(), name))
 }
