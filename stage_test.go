@@ -48,7 +48,7 @@ type TestAction struct {
 func (a TestAction) String() string { return fmt.Sprintf("%d", a.action) }
 
 func TestStageRunOnce(t *testing.T) {
-	stage := New("", 20)
+	stage := New("", 2, 20)
 	actor := TestActor{}
 	scenario := &TestScenario{}
 	out := new(bytes.Buffer)
@@ -67,7 +67,7 @@ func TestStageRunWitLogFileOnce(t *testing.T) {
 	dir, _ := ioutil.TempDir("", "test")
 	defer os.RemoveAll(dir)
 
-	stage := New(dir, 20)
+	stage := New(dir, 2, 20)
 	startAt, _ := time.Parse("2006/01/02 15:04:05", "2020/05/27 15:14:13")
 	stage.startAt = startAt
 	stage.ensureOutDir()
@@ -96,8 +96,8 @@ func TestStageRun(t *testing.T) {
 	dir, _ := ioutil.TempDir("", "test")
 	defer os.RemoveAll(dir)
 
-	stage := New(dir, 20)
-	err := stage.Run(10, NewTestActorFn, NewTestScenarioFn, 2)
+	stage := New(dir, 2, 20)
+	err := stage.Run(10, NewTestActorFn, NewTestScenarioFn)
 	if err != nil {
 		t.Errorf("stage.Run shoud not happen the error %v", err)
 	}

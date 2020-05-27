@@ -15,28 +15,30 @@ import (
 )
 
 type Stage struct {
-	seed    int64
-	baseDir string
-	startAt time.Time
+	concurrency int
+	seed        int64
+	baseDir     string
+	startAt     time.Time
 }
 
-func New(outDir string, seed int64) *Stage {
+func New(outDir string, concurrency int, seed int64) *Stage {
+	if concurrency < 1 {
+		concurrency = runtime.NumCPU()
+	}
 	return &Stage{
-		seed:    seed,
-		baseDir: outDir,
+		concurrency: concurrency,
+		seed:        seed,
+		baseDir:     outDir,
 	}
 }
 
-func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn, concurrency int) error {
+func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn) error {
 	s.startAt = time.Now()
 	err := s.ensureOutDir()
 	if err != nil {
 		return err
 	}
-	if concurrency < 1 {
-		concurrency = runtime.NumCPU()
-	}
-	sem := make(chan struct{}, concurrency)
+	sem := make(chan struct{}, s.concurrency)
 	defer close(sem)
 
 	rnd := rand.New(rand.NewSource(s.seed))
