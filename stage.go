@@ -2,11 +2,14 @@ package stage
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Stage struct {
@@ -27,14 +30,24 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, scenario Scenario) error {
 		return err
 	}
 
+	eg, ctx := errgroup.WithContext(context.Background())
 	for i := 0; i < iter; i++ {
-		actor := NewActorFn()
-		err := s.runWithLogFile(actor, scenario, iter, i)
-		if err != nil {
-			return err
-		}
+		i := i
+		eg.Go(func() error {
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				actor := newActorFn()
+				err := s.runWithLogFile(actor, scenario, iter, i)
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+		})
 	}
-	return nil
+	return eg.Wait()
 }
 
 func (s *Stage) runWithLogFile(actor Actor, scenario Scenario, iter, i int) error {
