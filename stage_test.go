@@ -97,7 +97,7 @@ func TestStageRun(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	stage := New(dir, 2, 20)
-	err := stage.Run(10, NewTestActorFn, NewTestScenarioFn)
+	err := stage.Run(10, NewTestActorFn, NewTestScenarioFn, NoOpeCallbackFn)
 	if err != nil {
 		t.Errorf("stage.Run shoud not happen the error %v", err)
 	}
@@ -115,5 +115,4 @@ func TestStageRun(t *testing.T) {
 			t.Errorf("stage.Run shoud output %s, but %s", expected, actual)
 		}
 	}
-
 }

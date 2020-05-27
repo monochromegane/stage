@@ -32,7 +32,7 @@ func New(outDir string, concurrency int, seed int64) *Stage {
 	}
 }
 
-func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn) error {
+func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn, callbackFn CallbackFn) error {
 	s.startAt = time.Now()
 	err := s.ensureOutDir()
 	if err != nil {
@@ -49,7 +49,10 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn
 		sSeed := rnd.Int63()
 		i := i
 		eg.Go(func() error {
-			defer func() { <-sem }()
+			defer func() {
+				callbackFn(i)
+				<-sem
+			}()
 
 			select {
 			case <-ctx.Done():
