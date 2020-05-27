@@ -7,5 +7,5 @@ type Actor interface {
 }
 
 type Action interface {
-	String()
+	String() string
 }

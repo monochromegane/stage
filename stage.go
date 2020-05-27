@@ -82,7 +82,7 @@ func (s *Stage) run(actor Actor, scenario Scenario, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		_, err = bw.WriteString(action)
+		_, err = bw.WriteString(action.String())
 		if err != nil {
 			return err
 		}
