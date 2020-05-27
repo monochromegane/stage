@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -23,17 +24,25 @@ func New(outDir string) *Stage {
 	}
 }
 
-func (s *Stage) Run(iter int, newActorFn NewActorFn, scenario Scenario) error {
+func (s *Stage) Run(iter int, newActorFn NewActorFn, scenario Scenario, concurrency int) error {
 	s.startAt = time.Now()
 	err := s.ensureOutDir()
 	if err != nil {
 		return err
 	}
+	if concurrency < 1 {
+		concurrency = runtime.NumCPU()
+	}
+	sem := make(chan struct{}, concurrency)
+	defer close(sem)
 
 	eg, ctx := errgroup.WithContext(context.Background())
 	for i := 0; i < iter; i++ {
+		sem <- struct{}{}
 		i := i
 		eg.Go(func() error {
+			defer func() { <-sem }()
+
 			select {
 			case <-ctx.Done():
 				return nil
