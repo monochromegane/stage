@@ -1,39 +1,82 @@
 package stage
 
-import "os"
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"time"
+)
 
 type Stage struct {
-	outDir string
+	baseDir string
+	startAt time.Time
 }
 
 func New(outDir string) *Stage {
 	return &Stage{
-		outDir: outDir,
+		baseDir: outDir,
 	}
 }
 
 func (s *Stage) Run(iter int, newActorFn NewActorFn, scenario Scenario) error {
-	err := ensureOutDir(outDir)
+	s.startAt = time.Now()
+	err := s.ensureOutDir()
 	if err != nil {
 		return err
 	}
 
 	for i := 0; i < iter; i++ {
 		actor := NewActorFn()
-		s.run(i, actor, scenario)
+		err := s.runWithLogFile(actor, scenario, iter, i)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (s *Stage) run(iter int, actor Actor, scenario Scenario) {
+func (s *Stage) runWithLogFile(actor Actor, scenario Scenario, iter, i int) error {
+	w, err := s.createLogFile(iter, i)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+
+	err = s.run(actor, scenario, w)
+	if err != nil {
+		return err
+	}
+}
+
+func (s *Stage) run(actor Actor, scenario Scenario, w io.Writer) error {
+	bw := bufio.NewWriter(w)
+	defer bw.Flush()
+
 	for scenario.Scan() {
-		actor.Act(scenario.Line())
-	}
-}
-
-func ensureOutDir(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return os.MkdirAll(path, 0755)
+		action, err := actor.Act(scenario.Line())
+		if err != nil {
+			return err
+		}
+		_, err = bw.WriteString(action)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func (s *Stage) outDirName() string {
+	return filepath.Join(s.baseDir, s.startAt.Format("20060102150405"))
+}
+
+func (s *Stage) ensureOutDir() error {
+	return ensureDir(s.outDirName())
+}
+
+func (s *Stage) createLogFile(max, i int) (io.Writer, error) {
+	format := fmt.Sprintf("iter-%%0%dd.log", numberOfDigit(max))
+	name := fmt.Sprintf(format, i)
+	return os.Create(filepath.Join(s.outDirName(), name))
 }
