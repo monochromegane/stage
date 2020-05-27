@@ -2,7 +2,7 @@
 
 Simple and flexible simulation framework for Go.
 
-This framework provides concurrent execution of simulations according to scenarios, output of results, and management of random number seeds.
+This framework provides concurrent execution of simulations according to scenarios, output of results, monitor of progress and management of random number seeds.
 
 All We need is implement the scenario and the actors who play it.
 
