@@ -40,6 +40,16 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn
 	}
 	sem := make(chan struct{}, s.concurrency)
 	defer close(sem)
+	progressCh := make(chan int, s.concurrency)
+	doneCh := make(chan struct{})
+	defer close(doneCh)
+
+	go func() {
+		for i := range progressCh {
+			callbackFn(i)
+		}
+		doneCh <- struct{}{}
+	}()
 
 	rnd := rand.New(rand.NewSource(s.seed))
 	eg, ctx := errgroup.WithContext(context.Background())
@@ -50,7 +60,7 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn
 		i := i
 		eg.Go(func() error {
 			defer func() {
-				callbackFn(i)
+				progressCh <- i
 				<-sem
 			}()
 
@@ -68,7 +78,14 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn
 			}
 		})
 	}
-	return eg.Wait()
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	close(progressCh)
+	<-doneCh
+	return nil
 }
 
 func (s *Stage) runWithLogFile(actor Actor, scenario Scenario, iter, i int, aSeed, sSeed int64) error {
