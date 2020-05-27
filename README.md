@@ -1,4 +1,4 @@
-# Stage
+# Stage [![Build Status](https://travis-ci.org/monochromegane/stage.svg?branch=master)](https://travis-ci.org/monochromegane/stage)
 
 Simple and flexible simulation framework for Go.
 
