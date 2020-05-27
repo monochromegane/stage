@@ -98,7 +98,7 @@ func (s *Stage) ensureOutDir() error {
 	return ensureDir(s.outDirName())
 }
 
-func (s *Stage) createLogFile(max, i int) (io.Writer, error) {
+func (s *Stage) createLogFile(max, i int) (*os.File, error) {
 	format := fmt.Sprintf("iter-%%0%dd.log", numberOfDigit(max))
 	name := fmt.Sprintf(format, i)
 	return os.Create(filepath.Join(s.outDirName(), name))
