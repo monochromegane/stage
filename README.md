@@ -6,7 +6,7 @@ This framework provides concurrent execution of simulations according to scenari
 
 All We need is implement the scenario and the actors who play it.
 
-# Usage
+## Usage
 
 ```go
 dir := ""                       // Directory for output
@@ -15,7 +15,7 @@ seed := 1                       // Seed for random
 iter := 10                      // Number of iteration
 
 s := stage.New(dir, concurrency, seed)
-s.Run(iter, newActorFn, newScenarioFn, callbackFn)
+s.Run(iter, NewYourActorFn, NewYourScenarioFn, stage.NoOpeCallbackFn)
 ```
 
 The stage needs a scenario and an actor.
@@ -38,6 +38,12 @@ The actor return an action as Stringer.
 
 ```go
 type YourAction struct{} // Implemantaion of Stringer which has String method.
+```
+
+If the show is too long, we can receive progress using callback function.
+
+```go
+func YourCallbackFn(i int) {} // Implemantaion of stage.CallbackFn method.
 ```
 
 ## Installation
