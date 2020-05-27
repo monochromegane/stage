@@ -24,7 +24,7 @@ func New(outDir string) *Stage {
 	}
 }
 
-func (s *Stage) Run(iter int, newActorFn NewActorFn, scenario Scenario, concurrency int) error {
+func (s *Stage) Run(iter int, newActorFn NewActorFn, newScenarioFn NewScenarioFn, concurrency int) error {
 	s.startAt = time.Now()
 	err := s.ensureOutDir()
 	if err != nil {
@@ -48,6 +48,7 @@ func (s *Stage) Run(iter int, newActorFn NewActorFn, scenario Scenario, concurre
 				return nil
 			default:
 				actor := newActorFn()
+				scenario := newScenarioFn()
 				err := s.runWithLogFile(actor, scenario, iter, i)
 				if err != nil {
 					return err
