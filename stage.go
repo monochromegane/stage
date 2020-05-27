@@ -70,6 +70,7 @@ func (s *Stage) runWithLogFile(actor Actor, scenario Scenario, iter, i int) erro
 	if err != nil {
 		return err
 	}
+	return nil
 }
 
 func (s *Stage) run(actor Actor, scenario Scenario, w io.Writer) error {
