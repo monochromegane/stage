@@ -116,3 +116,24 @@ func TestStageRun(t *testing.T) {
 		}
 	}
 }
+
+func NewTestErrorActorFn(seed int64) Actor {
+	return TestErrorActor{}
+}
+
+type TestErrorActor struct{}
+
+func (a TestErrorActor) Act(line Line) (Action, error) {
+	return nil, fmt.Errorf("")
+}
+
+func TestStageRunError(t *testing.T) {
+	dir, _ := ioutil.TempDir("", "test")
+	defer os.RemoveAll(dir)
+
+	stage := New(dir, 2, 20)
+	err := stage.Run(10, NewTestErrorActorFn, NewTestScenarioFn, NoOpeCallbackFn)
+	if err == nil {
+		t.Errorf("stage.Run with error shoud return an error, but nil")
+	}
+}
