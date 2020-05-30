@@ -136,6 +136,17 @@ func NewActorFn(seed int64) stage.Actor {
 
 ### Callback function (Optional)
 
+If our scenario is going to run long, we can monitor it's progress by using `stage.CallbackFn`.
+The callback function is called when each iteration finished.
+So, we can use our favorite progress bar library.
+
+```go
+callbackFn := func(i int) { bar.Increment() } }
+```
+
+The framework has also an empty operation callback function named `stage.NoOpeCallbackFn`.
+We usually use the function if we don't need monitor of progress.
+
 ## Installation
 
 ```sh
