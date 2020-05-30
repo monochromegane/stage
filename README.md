@@ -45,7 +45,7 @@ s := stage.New(dir, concurrency, seed)
 s.Run(iter, NewActorFn, NewScenarioFn, stage.NoOpeCallbackFn)
 ```
 
-The result will outputs log.
+The result will be output to log file.
 
 ```sh
 log
