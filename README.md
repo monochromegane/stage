@@ -36,13 +36,23 @@ for i := 0; i < iter; i++ {
 1. And stage.New().Run()
 
 ```go
-dir := "."                      // Directory for output
+dir := "log"                    // Directory for output
 concurrency := runtime.NumCPU() // Number of concurrency for scenario
 seed := 1                       // Seed for random
-iter := 10                      // Number of iteration
+iter := 3                       // Number of iteration
 
 s := stage.New(dir, concurrency, seed)
 s.Run(iter, NewActorFn, NewScenarioFn, stage.NoOpeCallbackFn)
+```
+
+The result will outputs log.
+
+```sh
+log
+└── 20200530184234-1 # Timestamp-Seed
+    ├── iter_00-a_7947919477105006377-s_5355116748216652230.log # Iteration log files
+    ├── iter_01-a_4846631296614585111-s_2007235010091403794.log #   with seed for actor(a)
+    └── iter_02-a_0610076349056253918-s_3540139325796113853.log #   and  seed for scenario(s)
 ```
 
 See also [examples](https://github.com/monochromegane/stage/blob/master/_examples).
