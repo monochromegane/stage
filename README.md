@@ -51,7 +51,7 @@ See also [examples](https://github.com/monochromegane/stage/blob/master/_example
 ### Scenario
 
 Scenario interface represents our simulation scenario.
-The stage package runs the scenario number of iterations times in parallel.
+This framework runs the scenario number of iterations times in parallel.
 
 Our scenario has Scan() method.
 This method reads the scenario one line.
@@ -93,8 +93,47 @@ func NewScenarioFn(seed int64) stage.Scenario {
 }
 ```
 
-### Actor
-### Action
+### Actor and Action
+
+Actor interface represents our simulation actor.
+This framework runs the actor number of lines times from the scenario.
+
+Our actor has Act() method.
+This method is called with a line of scenario one by one and returns a result of simulation as `stage.Action`.
+
+```go
+type Actor struct {
+    n   int
+    sum int
+}
+
+func (s *Actor) Act(line stage.Line) (stage.Action, error) {
+    s.n++
+    s.sum += line["x"].(float64)
+    return Action{avg: float64(s.sum/s.n)}
+}
+```
+
+We can implement `stage.Action` like a `Stringer`.
+
+```go
+type Action struct {
+    avg float64
+}
+
+func (a Action) String() string {
+    return fmt.Sprintf("%f\n", a.avg)
+}
+```
+
+Finally, we define a method to generate the actor for each iteration.
+
+```go
+func NewActorFn(seed int64) stage.Actor {
+    return &Actor{}
+}
+```
+
 ### Callback function (Optional)
 
 ## Installation
