@@ -6,9 +6,30 @@ This framework provides concurrent execution of simulations according to scenari
 
 All We need is implement the scenario and the actors who play it.
 
+## Architecture
+
+The algorithm of this framework is shown in the pseudo code below.
+
+```go
+for i := 0; i < iter; i++ {
+    sem <- struct{}{}
+
+    go func() {
+        scenario := NewScenarioFn(rnd.Int63())
+        actor := NewActorFn(rnd.Int63())
+
+        for scenario.Scan() {
+            action, _ := actor.Act(scenario.Line())
+            w.Write(action.String())
+        }
+        <-sem
+    }()
+}
+```
+
 ## Usage
 
-1. Implement your scenario.
+1. Implement our scenario.
 1. Implement an actor who plays the scenario.
 1. Implement an action which represents performance of the actor.
 1. Implement a callback function which is called at each iteration. (Optional)
@@ -21,10 +42,11 @@ seed := 1                       // Seed for random
 iter := 10                      // Number of iteration
 
 s := stage.New(dir, concurrency, seed)
-s.Run(iter, NewYourActorFn, NewYourScenarioFn, stage.NoOpeCallbackFn)
+s.Run(iter, NewActorFn, NewScenarioFn, stage.NoOpeCallbackFn)
 ```
 
 See also [examples](https://github.com/monochromegane/stage/blob/master/_examples).
+
 
 ### Scenario
 
@@ -51,7 +73,7 @@ func (s *Scenario) Scan() bool {
 And the scenario has Line() method too.
 This method returns the current line for the scenario as `stage.Line`.
 Actors will perform according to it by each line.
-We can use `stage.Line` flexible because the struct is type of `map[string]interface{}`.
+We can use `stage.Line` flexibly because the struct is type of `map[string]interface{}`.
 
 ```go
 func (s *Scenario) Line() stage.Line {
