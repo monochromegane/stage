@@ -165,8 +165,8 @@ We usually use the function if we don't need monitor of progress.
 Each scenario provides blue point according with a probability ditribution.
 
 ```sh
-$ go run _examples/progress/main.go -s abrupt
-$ go run _examples/progress/main.go -s gradual
+$ go run _examples/adwin/main.go -s abrupt
+$ go run _examples/adwin/main.go -s gradual
 ```
 
 | Abrupt changes | Gradual changes |
