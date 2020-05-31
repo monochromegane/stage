@@ -164,6 +164,11 @@ We usually use the function if we don't need monitor of progress.
 [This example](https://github.com/monochromegane/stage/tree/master/_examples/adwin) shows that an adaptive window scaling algorithm called ADWIN detects and changes window size using two scenario.
 Each scenario provides blue point according with a probability ditribution.
 
+```sh
+$ go run _examples/progress/main.go -s abrupt
+$ go run _examples/progress/main.go -s gradual
+```
+
 | Abrupt changes | Gradual changes |
 | -------------- | --------------- |
 | ![example_adwin_abrupt](https://user-images.githubusercontent.com/1845486/83343338-f8bcbe00-a333-11ea-983b-81ba9a6f8b08.png)               | ![example_adwin_gradual](https://user-images.githubusercontent.com/1845486/83343344-10944200-a334-11ea-9364-b4d4cedcdff6.png)                |
